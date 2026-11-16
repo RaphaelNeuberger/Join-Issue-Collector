@@ -70,6 +70,34 @@ function initFormToggle() {
   }
 }
 
+/** @constant {string} sessionStorage key: intro already played in this tab session */
+const INTRO_SHOWN_KEY = "joinIntroShown";
+
+/**
+ * The intro plays only once per browser session (and never with
+ * "prefers-reduced-motion"), so returning users are not slowed down.
+ * @returns {boolean} True if the animation should be skipped
+ */
+function shouldSkipIntro() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
+  try {
+    return sessionStorage.getItem(INTRO_SHOWN_KEY) === "1";
+  } catch (_error) {
+    return false;
+  }
+}
+
+/**
+ * Remembers that the intro has been played in this session.
+ */
+function markIntroShown() {
+  try {
+    sessionStorage.setItem(INTRO_SHOWN_KEY, "1");
+  } catch (_error) {
+    /* storage unavailable (private mode) - intro simply plays again */
+  }
+}
+
 /**
  * Initializes the intro animation
  */
@@ -79,10 +107,12 @@ function initIntroAnimation() {
     const flyingLogo = intro?.querySelector("img");
     const headerLogo = document.querySelector(".join-logo");
 
-    if (!intro || !flyingLogo || !headerLogo) {
+    if (!intro || !flyingLogo || !headerLogo || shouldSkipIntro()) {
       document.body.classList.add("loaded");
+      if (intro) intro.remove();
       return;
     }
+    markIntroShown();
 
     // Dark pages (welcome) keep the dark intro on mobile, too
     const isDarkIntro = document.body.dataset.intro === "dark";

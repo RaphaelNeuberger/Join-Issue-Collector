@@ -344,3 +344,13 @@ body {
     font-size: 16px;
   }
 }
+
+/* --- Wide screens: keep header and footer within the content area -------- */
+.request-header,
+.request-footer {
+  width: 100%;
+  max-width: 1920px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}

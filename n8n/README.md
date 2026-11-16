@@ -11,17 +11,19 @@ Verarbeitet eingehende Stakeholder-E-Mails zu Kanban-Tickets.
 **Ablauf:**
 
 1. **Microsoft Outlook Trigger** - pollt das Postfach jede Minute auf neue Mails
-2. **Code (Extract)** - extrahiert Absender, Betreff, Body; wandelt HTML zu Plain-Text (UTF-8-sauber)
-3. **Get Rate Limit** - liest den heutigen Tageszaehler aus Firebase `/rateLimits/YYYY-MM-DD`
-4. **IF (Limit reached?)** - prueft `count >= 10`
-   - **TRUE** (Limit erreicht): Mail in Ordner "Zu bearbeiten" verschieben + Limit-Info-Mail an Absender
-   - **FALSE**: weiter zur KI-Verarbeitung
-5. **OpenAI (Classify)** - GPT-4.1-mini extrahiert strukturiert: title, category, priority, dueDate, description (als JSON)
-6. **Code (Build Task Payload)** - baut das Firebase-Task-Objekt (status=triage, creator.type=external, aiGenerated=true)
+2. **Parse & Filter Email** (Code) - extrahiert Absender, Betreff, Body (HTML -> Plain-Text) und verwirft per **Schleifenschutz** eigene Mails, noreply-/Bounce-Absender, Auto-Replies, Ticketsystem-Antworten (z. B. `NCSUP-123456 ...`) und Antworten auf die eigenen Bestaetigungsmails
+3. **OpenAI - Join Issue Collector** - entscheidet zuerst `isRequest` (echte Feature-/Bug-Anfrage?) und extrahiert dann title, category, priority, dueDate, description und **subtasks** (genannte Teilaufgaben) als JSON
+4. **Build Task Payload** (Code) - **KI-Gate:** bei `isRequest = false` endet der Lauf (kein Ticket, keine Antwort, Mail bleibt im Posteingang). Sonst Firebase-Task-Objekt (status=triage, creator.type=external, aiGenerated=true, subtasks im Join-Format)
+5. **Get Rate Limit** - liest den heutigen Tageszaehler aus Firebase `/rateLimits/YYYY-MM-DD`
+6. **Limit reached?** (IF) - prueft `count >= 10`
+   - **TRUE:** Mail in Ordner "Zu bearbeiten" verschieben -> **Send Limit Reached Mail** an den Absender
+   - **FALSE:** weiter
 7. **Create Task in Firebase** - POST an `/tasks.json`
 8. **Increment Counter** - PATCH `/rateLimits/YYYY-MM-DD` mit count+1
-9. **Move Mail to Erledigt** - verschiebt die Quell-Mail in den "Erledigt"-Ordner (via Microsoft Graph API)
+9. **Move Mail to Erledigt** - verschiebt die Quell-Mail in den "Erledigt"-Ordner (Microsoft Graph API)
 10. **Send Confirmation Mail** - Bestaetigungsmail an den Absender
+
+Die KI-Pruefung laeuft bewusst **vor** dem Tageslimit: so bekommen nur echte Anfragen eine Limit-Mail, normale Geschaeftsmails bleiben unberuehrt.
 
 **Error-Pfad:** Jeder kritische Knoten (OpenAI, Build, Create, Increment, Move, Confirmation) hat "Continue (using error output)" aktiv. Alle Error-Outputs muenden in "Error: Move to Zu bearbeiten" -> "Error: Send Sorry Mail" (Mail in "Zu bearbeiten" + "Wir melden uns"-Hinweis).
 
@@ -44,11 +46,11 @@ Backend fuer `request.html` (Figma-Frame "Request", v. a. mobil). Webhook `POST 
 
 1. **Request Form Webhook** - nimmt die Formulardaten entgegen (Antwort erst am Ende via "Respond to Webhook")
 2. **Validate Request** (Code) - Laengenbegrenzung, E-Mail-Pruefung, Honeypot `website`, HTML-Escaping, KI-Input wie beim Mail-Collector
-3. **Is Valid?** - ungueltig -> `400 { status: "invalid" }`
+3. **Is Valid?** - ungueltig -> `400 { status: "invalid", field }` (`field` = name/email/own_email/subject/message; das Formular zeigt die passende Meldung an)
 4. **Get Rate Limit / Limit reached?** - gleicher Tageszaehler `/rateLimits/YYYY-MM-DD` wie Workflow 01
    - **Limit erreicht:** Kopie der Anfrage in Outlook-Ordner "Zu bearbeiten" + Limit-Hinweis an den Absender -> `202 { status: "limit" }`
-5. **OpenAI** - gleiche Klassifizierung (title, category, priority, dueDate, description)
-6. **Build Task Payload** - Ticket in "Triage", `creator.type = external`, `aiGenerated = true`, `source = "web-form"`
+5. **OpenAI** - gleiche Klassifizierung (title, category, priority, dueDate, description, **subtasks**)
+6. **Build Task Payload** - Ticket in "Triage", `creator.type = external`, `aiGenerated = true`, `source = "web-form"`, erkannte Subtasks
 7. **Create Task in Firebase -> Increment Counter -> Send Confirmation Mail** -> `201 { status: "created" }`
 
 **Fehlerpfad:** OpenAI, Build und Create haben einen Error-Output -> Kopie in "Zu bearbeiten" + "Wir melden uns"-Mail -> `202 { status: "manual" }`.

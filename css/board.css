@@ -978,3 +978,61 @@ body {
   letter-spacing: 0.4px;
   vertical-align: middle;
 }
+/* --- Desktop: five equally wide columns (review feedback) ---------------- */
+@media (min-width: 1024px) {
+  .tasks-columns {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+
+  .task-column {
+    width: auto;
+    min-width: 0;
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .task-cards {
+    width: 100%;
+  }
+
+  .task-header {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .task-header span {
+    font-size: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .task-header img {
+    flex-shrink: 0;
+  }
+
+  .card-task {
+    padding: 12px;
+  }
+
+  .card-type {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .board-container {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}

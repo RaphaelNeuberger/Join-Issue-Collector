@@ -527,3 +527,9 @@
     margin-left: 0;
   }
 }
+
+/* Keep line breaks of (AI-generated) descriptions readable */
+.task-card-story {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
