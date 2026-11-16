@@ -9,8 +9,14 @@
 /** @constant {string} Production URL of the n8n webhook */
 const N8N_REQUEST_WEBHOOK = "https://n8n.newmountains.it/webhook/join-request";
 
-/** @constant {string} Fallback address if the webhook is unreachable */
-const REQUEST_FALLBACK_EMAIL = "R.Neuberger@newmountains.it";
+/** @constant {Object<string, string>} Messages for server-side validation errors */
+const FIELD_ERROR_MESSAGES = {
+  name: "Please enter your name (at least 2 characters).",
+  email: "Please enter a valid email address.",
+  own_email: "Please use your own email address - this one belongs to the Join team.",
+  subject: "Please enter a subject (at least 3 characters).",
+  message: "Please describe your request (at least 10 characters).",
+};
 
 /** @constant {RegExp} Pragmatic email check (server validates again) */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -87,17 +93,6 @@ function showRequestToast(message) {
 }
 
 /**
- * Builds a mailto link with the form content as last-resort fallback.
- * @param {ReturnType<typeof readRequestForm>} values - Form values
- * @returns {string} mailto URL
- */
-function buildFallbackMailto(values) {
-  const subject = encodeURIComponent(values.subject);
-  const body = encodeURIComponent(`${values.message}\n\n${values.name}`);
-  return `mailto:${REQUEST_FALLBACK_EMAIL}?subject=${subject}&body=${body}`;
-}
-
-/**
  * Posts the request to n8n with a timeout.
  * @async
  * @param {ReturnType<typeof readRequestForm>} values - Validated values
@@ -137,6 +132,17 @@ function getResultMessage(result) {
 }
 
 /**
+ * Returns the message for a validation error reported by the server.
+ * @param {{ok: boolean, status: number, body: Object}} result - Webhook result
+ * @returns {string} Error text, empty if the server did not reject a field
+ */
+function getFieldErrorMessage(result) {
+  const field = result.body && result.body.status === "invalid" && result.body.field;
+  if (!field) return "";
+  return FIELD_ERROR_MESSAGES[field] || "Please check your input.";
+}
+
+/**
  * Handles the submit event: validate, send, give feedback.
  * @async
  * @param {SubmitEvent} event - Form submit event
@@ -156,6 +162,11 @@ async function onRequestSubmit(event) {
   if (button) button.disabled = true;
   try {
     const result = await postRequest(values);
+    const fieldError = getFieldErrorMessage(result);
+    if (fieldError) {
+      setRequestError(fieldError);
+      return;
+    }
     const message = getResultMessage(result);
     if (!message) throw new Error(`Webhook answered ${result.status}`);
     form.reset();
@@ -165,9 +176,8 @@ async function onRequestSubmit(event) {
     }, 3000);
   } catch (_err) {
     setRequestError(
-      "Your request could not be sent right now. Please try again or send it by email."
+      "Your request could not be sent right now. Please try again in a few minutes."
     );
-    window.location.href = buildFallbackMailto(values);
   } finally {
     if (button) button.disabled = false;
   }
