@@ -372,11 +372,18 @@
         ]
       ]
     },
-    "Parse & Filter Email": {
+    "Limit reached?": {
       "main": [
         [
           {
-            "node": "OpenAI - Join Issue Collector",
+            "node": "Move Mail to Zu bearbeiten",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Task in Firebase",
             "type": "main",
             "index": 0
           }
@@ -419,35 +426,6 @@
         ]
       ]
     },
-    "Get Rate Limit": {
-      "main": [
-        [
-          {
-            "node": "Limit reached?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Limit reached?": {
-      "main": [
-        [
-          {
-            "node": "Move Mail to Zu bearbeiten",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Create Task in Firebase",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Create Task in Firebase": {
       "main": [
         [
@@ -460,6 +438,17 @@
         [
           {
             "node": "Error: Move to Zu bearbeiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Rate Limit": {
+      "main": [
+        [
+          {
+            "node": "Limit reached?",
             "type": "main",
             "index": 0
           }
@@ -535,6 +524,17 @@
           }
         ]
       ]
+    },
+    "Parse & Filter Email": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Join Issue Collector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -543,7 +543,7 @@
     "binaryMode": "separate",
     "availableInMCP": true
   },
-  "versionId": "2bc3a555-be94-40cc-8233-3a7718301a15",
+  "versionId": "ffb5779a-9ae0-4639-906f-daaa6126cd8f",
   "meta": {
     "templateCredsSetupCompleted": true,
     "aiBuilderAssisted": true,
