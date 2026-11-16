@@ -533,3 +533,22 @@ body.splash-active .greeting-splash {
     height: 48px;
   }
 }
+
+/* Email requests KPI (AI-generated tickets from email / web form) */
+.kpi-line--urgent > .kpi-card {
+  flex: 2;
+}
+
+.kpi-card--email {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.kpi-value--email {
+  color: #6e52ff;
+}
+
+.kpi-card--email:hover .kpi-value--email {
+  color: #ffffff;
+}

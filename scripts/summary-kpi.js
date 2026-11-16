@@ -60,6 +60,7 @@
     updateElement("kpi-progress", counts.progress);
     updateElement("kpi-feedback", counts.feedback);
     updateElement("kpi-board", counts.total);
+    updateElement("kpi-email", counts.email);
   }
 
   /**
@@ -79,6 +80,7 @@
       ),
       urgent: filterByPriority(tasks, "urgent").length,
       total: tasks.length,
+      email: tasks.filter((t) => t.aiGenerated === true).length,
     };
 
     updateAllKPIElements(counts);
@@ -96,12 +98,16 @@
   }
 
   /**
-   * Finds the task with the earliest due date
+   * Finds the task with the earliest due date. Deadlines from today on are
+   * preferred, so a long-overdue task does not hide the next real deadline.
    * @param {Array<Object>} tasks - Array of tasks with dueDate property
-   * @returns {Object} The task with earliest due date
+   * @returns {Object} The task with earliest (upcoming) due date
    */
   function findEarliestTask(tasks) {
-    return tasks.reduce((earliest, current) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const upcoming = tasks.filter((t) => t.dueDate >= today);
+    const pool = upcoming.length ? upcoming : tasks;
+    return pool.reduce((earliest, current) => {
       const currentDate = new Date(current.dueDate);
       const earliestDate = new Date(earliest.dueDate);
       return currentDate < earliestDate ? current : earliest;
