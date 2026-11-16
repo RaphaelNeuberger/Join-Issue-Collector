@@ -73,72 +73,10 @@ function applyCounterState(count) {
 }
 
 /**
- * Copies the request email address to the clipboard and reports the result
- * inside the dialog. Falls back to selecting the text when the Clipboard API
- * is unavailable (e.g. plain http).
- * @async
- */
-async function copyMailAddress() {
-  const address = document.getElementById("mailAddress");
-  const status = document.querySelector("[data-mail-status]");
-  try {
-    await navigator.clipboard.writeText(address.textContent.trim());
-    status.textContent = "Address copied - paste it into your email.";
-  } catch (_error) {
-    window.getSelection().selectAllChildren(address);
-    status.textContent = "Press Ctrl+C to copy the selected address.";
-  }
-}
-
-/**
- * Opens the mail dialog instead of relying on a mailto: link, because a
- * visitor without a configured mail program would otherwise see nothing.
- * @param {MouseEvent} event - Click on a "Create Email Request" button
- */
-function openMailDialog(event) {
-  const dialog = document.getElementById("mailDialog");
-  if (!dialog || typeof dialog.showModal !== "function") return;
-  event.preventDefault();
-  document.querySelector("[data-mail-status]").textContent = "";
-  dialog.showModal();
-}
-
-/**
- * Wires up the mail dialog: open buttons, copy button, close button and a
- * click on the backdrop.
- */
-function initMailDialog() {
-  const dialog = document.getElementById("mailDialog");
-  if (!dialog) return;
-  document.querySelectorAll("[data-mail-dialog]").forEach((btn) => {
-    btn.addEventListener("click", openMailDialog);
-  });
-  dialog.querySelector("[data-mail-copy]").addEventListener("click", copyMailAddress);
-  dialog.querySelector("[data-mail-close]").addEventListener("click", () => dialog.close());
-  dialog.addEventListener("click", (event) => {
-    if (isBackdropClick(event, dialog)) dialog.close();
-  });
-}
-
-/**
- * Checks whether a click landed on the dialog backdrop (outside its box).
- * @param {MouseEvent} event - Click event on the dialog element
- * @param {HTMLDialogElement} dialog - The open dialog
- * @returns {boolean} True if the click was outside the dialog box
- */
-function isBackdropClick(event, dialog) {
-  if (event.target !== dialog) return false;
-  const box = dialog.getBoundingClientRect();
-  return event.clientX < box.left || event.clientX > box.right ||
-    event.clientY < box.top || event.clientY > box.bottom;
-}
-
-/**
  * Initializes the page once the DOM is ready.
  * @async
  */
 async function initStakeholderPage() {
-  initMailDialog();
   applyCounterState(await fetchTodaysCount());
 }
 
