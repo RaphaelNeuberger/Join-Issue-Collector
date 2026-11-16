@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Join - submit a feature request as a stakeholder or log in as a team member." />
+    <title>Welcome &bull; Join</title>
+    <link
+      rel="icon"
+      href="img/logo/Logo for Favicon construction.svg"
+      type="image/svg+xml" />
+    <link rel="stylesheet" href="css/open-sans.css" />
+    <link rel="stylesheet" href="css/welcome.css" />
+  </head>
+  <body data-intro="dark">
+    <!-- Intro animation: logo flies to the corner, then the page reveals -->
+    <div id="intro-screen" aria-hidden="true">
+      <img src="img/logo/join_logo_white.svg" alt="" />
+    </div>
+
+    <header class="welcome-header">
+      <img
+        src="img/logo/join_logo_white.svg"
+        alt="Join"
+        class="join-logo welcome-header__logo" />
+      <p class="welcome-header__signup">
+        Not a Join user?
+        <a href="login.html#signup">Sign up</a>
+      </p>
+    </header>
+
+    <main class="welcome-page">
+      <section class="welcome-card" aria-labelledby="welcome-title">
+        <h1 id="welcome-title" class="welcome-card__title">Welcome</h1>
+
+        <p class="welcome-card__lead">
+          Pick the option that suits your role: create a request as a
+          stakeholder or log in if you&rsquo;re part of the team.
+        </p>
+
+        <nav class="welcome-roles" aria-label="Choose your role">
+          <section class="welcome-role" aria-labelledby="role-stakeholder">
+            <h2 id="role-stakeholder" class="welcome-role__question">
+              <img
+                class="welcome-role__icon"
+                src="img/icons/briefcase.svg"
+                alt=""
+                width="24"
+                height="24" />
+              Are you a stakeholder?
+            </h2>
+            <a href="stakeholder.html" class="welcome-btn welcome-btn--primary">
+              Create request
+            </a>
+          </section>
+
+          <section class="welcome-role" aria-labelledby="role-member">
+            <h2 id="role-member" class="welcome-role__question">
+              <img
+                class="welcome-role__icon"
+                src="img/icons/team.svg"
+                alt=""
+                width="24"
+                height="24" />
+              Are you a team member?
+            </h2>
+            <a href="login.html" class="welcome-btn welcome-btn--ghost">
+              Member log in
+            </a>
+          </section>
+        </nav>
+      </section>
+    </main>
+
+    <footer class="welcome-footer">
+      <a href="privacypolicy.html">Privacy Policy</a>
+      <a href="legal-notice.html">Legal notice</a>
+    </footer>
+
+    <script src="scripts/index_ui.js"></script>
+  </body>
+</html>
